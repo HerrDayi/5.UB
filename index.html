@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>iPad Hilfestation: Forschungs-Labor</title>
+    <style>
+        :root { 
+            --primary: #1e3a8a; 
+            --primary-light: #eff6ff;
+            --accent: #f59e0b;
+            --success: #10b981;
+            --bg: #f8fafc; 
+            --text: #334155;
+            --card-bg: #ffffff;
+            --color-g1: #3b82f6; 
+            --color-g2: #f97316; 
+            --color-g3: #10b981;   
+        }
+        
+        html, body { position: fixed; overflow: hidden; width: 100%; height: 100%; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg); margin: 0; display: flex; flex-direction: column; color: var(--text); }
+        
+        /* HEADER REFRESH */
+        .header { background: linear-gradient(135deg, var(--primary), #1e40af); color: white; padding: 14px; text-align: center; flex-shrink: 0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .header h1 { margin: 0; font-size: 1.2rem; font-weight: 800; letter-spacing: 0.5px; }
+        
+        /* VISUELLER WORKSPACE AS A CLEAN CARD */
+        .visual-workspace { 
+            background: var(--card-bg); 
+            margin: 12px 12px 6px 12px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            padding: 14px; 
+            text-align: center; 
+            flex-shrink: 0;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .split-models {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            margin: 5px auto;
+            max-width: 600px;
+        }
+
+        .model-box {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .model-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #94a3b8;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .net-svg { width: 100%; max-width: 200px; height: auto; min-height: 140px; }
+        
+        .edge { stroke: #cbd5e1; stroke-width: 2.5; transition: stroke 0.3s, stroke-width 0.3s; fill: none; stroke-linecap: round; }
+        .face-bg { fill: #f8fafc; stroke: #e2e8f0; stroke-width: 1; }
+        .quader-face { fill: #f1f5f9; fill-opacity: 0.5; }
+        
+        /* Highlights */
+        .edge.highlight-g1 { stroke: var(--color-g1); stroke-width: 5.5; }
+        .edge.highlight-g2 { stroke: var(--color-g2); stroke-width: 5.5; }
+        .edge.highlight-g3 { stroke: var(--color-g3); stroke-width: 5.5; }
+
+        /* Modernere Buttons */
+        .kanten-explorer { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+        .explorer-btn { border: none; padding: 10px 16px; border-radius: 12px; color: white; font-weight: 700; font-size: 0.8rem; cursor: pointer; opacity: 0.3; transition: all 0.2s ease; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .explorer-btn.active { opacity: 1; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transform: translateY(-1px); }
+        .btn-g1 { background: var(--color-g1); }
+        .btn-g2 { background: var(--color-g2); }
+        .btn-g3 { background: var(--color-g3); }
+
+        /* DER NEUE PROGRESS STEPPER */
+        .stepper-container {
+            display: flex;
+            justify-content: space-between;
+            background: #e2e8f0;
+            border-radius: 14px;
+            margin: 6px 12px;
+            padding: 4px;
+            flex-shrink: 0;
+        }
+        .step-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px 5px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: #64748b;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+        }
+        .step-tab.unlocked { color: var(--primary); background: rgba(255,255,255,0.4); }
+        .step-tab.active { background: var(--card-bg); color: var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+        .step-tab.locked { opacity: 0.5; cursor: not-allowed; }
+
+        /* DER ZENTRALE INHALTS-CONTAINER (FESTE POSITION) */
+        .content-container { 
+            flex-grow: 1; 
+            margin: 6px 12px 12px 12px; 
+            background: var(--card-bg); 
+            border-radius: 16px; 
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .step-panel { display: none; padding: 20px; animation: fadeIn 0.3s ease; }
+        .step-panel.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-title { font-size: 1.05rem; font-weight: 800; color: var(--primary); margin-top: 0; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        
+        /* VALIDIERUNG & TOOLS */
+        .validation-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; background: #f8fafc; padding: 10px 14px; border-radius: 10px; border: 1px solid #edf2f7; }
+        .calc-input { width: 60px; padding: 6px; border: 2px solid #cbd5e1; border-radius: 8px; text-align: center; font-weight: 700; font-size: 0.95rem; color: var(--text); transition: all 0.2s; }
+        .calc-input:focus { border-color: var(--primary); outline: none; }
+        .calc-input.correct { border-color: var(--success); background: #f0fdf4; color: var(--success); }
+        
+        .toggle-box { background: var(--primary-light); border-left: 4px solid var(--color-g1); padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 0.85rem; display: none; line-height: 1.4; }
+        .info-trigger-btn { background: #f1f5f9; border: 1px solid #cbd5e1; color: #475569; padding: 6px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; margin-top: 5px; }
+
+        .pill-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .pill { background: var(--primary-light); color: var(--primary); border: 1px solid #dbeafe; padding: 8px 14px; border-radius: 10px; font-size: 0.8rem; font-weight: 600; line-height: 1.3; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🚀 Forscher-Labor: Die Boxen-Herausforderung</h1>
+</div>
+
+<div class="visual-workspace">
+    <div class="split-models">
+        
+        <div class="model-box">
+            <div class="model-label">3D-Ansicht</div>
+            <svg class="net-svg" viewBox="0 0 100 110">
+                <polygon points="15,75 65,75 65,45 15,45" class="quader-face" style="stroke: #e2e8f0; stroke-width: 0.5;"/>
+                <polygon points="65,75 90,55 90,25 65,45" class="quader-face" style="stroke: #e2e8f0; stroke-width: 0.5;"/>
+                <polygon points="15,45 65,45 90,25 40,25" class="quader-face" style="stroke: #e2e8f0; stroke-width: 0.5;"/>
+
+                <line x1="15" y1="45" x2="65" y2="45" class="edge id-g1" />
+                <line x1="15" y1="75" x2="65" y2="75" class="edge id-g1" />
+                <line x1="40" y1="25" x2="90" y2="25" class="edge id-g1" />
+                <line x1="40" y1="55" x2="90" y2="55" class="edge id-g1" style="stroke-dasharray: 2,2;" /> 
+                
+                <line x1="15" y1="45" x2="40" y2="25" class="edge id-g2" />
+                <line x1="65" y1="45" x2="90" y2="25" class="edge id-g2" />
+                <line x1="15" y1="75" x2="40" y2="55" class="edge id-g2" style="stroke-dasharray: 2,2;" />
+                <line x1="65" y1="75" x2="90" y2="55" class="edge id-g2" />
+
+                <line x1="15" y1="45" x2="15" y2="75" class="edge id-h" />
+                <line x1="65" y1="45" x2="65" y2="75" class="edge id-h" />
+                <line x1="40" y1="25" x2="40" y2="55" class="edge id-h" style="stroke-dasharray: 2,2;" />
+                <line x1="90" y1="25" x2="90" y2="55" class="edge id-h" />
+            </svg>
+        </div>
+
+        <div class="model-box">
+            <div class="model-label">Körpernetz</div>
+            <svg class="net-svg" viewBox="0 0 140 150">
+                <rect x="40" y="10" width="40" height="30" class="face-bg" />
+                <rect x="10" y="40" width="30" height="40" class="face-bg" />
+                <rect x="40" y="40" width="40" height="40" class="face-bg" />
+                <rect x="80" y="40" width="30" height="40" class="face-bg" />
+                <rect x="40" y="80" width="40" height="30" class="face-bg" />
+                <rect x="40" y="110" width="40" height="40" class="face-bg" />
+
+                <line x1="40" y1="10" x2="80" y2="10" class="edge id-g1" />
+                <line x1="40" y1="40" x2="80" y2="40" class="edge id-g1" />
+                <line x1="40" y1="80" x2="80" y2="80" class="edge id-g1" />
+                <line x1="40" y1="110" x2="80" y2="110" class="edge id-g1" />
+                <line x1="40" y1="150" x2="80" y2="150" class="edge id-g1" />
+                
+                <line x1="40" y1="10" x2="40" y2="40" class="edge id-g2" />
+                <line x1="80" y1="10" x2="80" y2="40" class="edge id-g2" />
+                <line x1="10" y1="40" x2="40" y2="40" class="edge id-g2" />
+                <line x1="80" y1="40" x2="110" y2="40" class="edge id-g2" />
+                <line x1="10" y1="80" x2="40" y2="80" class="edge id-g2" />
+                <line x1="80" y1="80" x2="110" y2="80" class="edge id-g2" />
+                <line x1="40" y1="80" x2="40" y2="110" class="edge id-g2" />
+                <line x1="80" y1="80" x2="80" y2="110" class="edge id-g2" />
+
+                <line x1="10" y1="40" x2="10" y2="80" class="edge id-h" />
+                <line x1="40" y1="40" x2="40" y2="80" class="edge id-h" />
+                <line x1="80" y1="40" x2="80" y2="80" class="edge id-h" />
+                <line x1="110" y1="40" x2="110" y2="80" class="edge id-h" />
+                <line x1="40" y1="110" x2="40" y2="150" class="edge id-h" />
+                <line x1="80" y1="110" x2="80" y2="150" class="edge id-h" />
+            </svg>
+        </div>
+
+    </div>
+
+    <div class="kanten-explorer">
+        <button class="explorer-btn btn-g1" onclick="toggleKanten('g1', this)">🔵 Kantengruppe 1</button>
+        <button class="explorer-btn btn-g2" onclick="toggleKanten('g2', this)">🟠 Kantengruppe 2</button>
+        <button class="explorer-btn btn-g3" onclick="toggleKanten('h', this)">🟢 Kantengruppe 3</button>
+    </div>
+</div>
+
+<div class="stepper-container">
+    <div class="step-tab unlocked active" id="tab1" onclick="switchStep(1)"><span>1</span> Flächen</div>
+    <div class="step-tab unlocked" id="tab2" onclick="switchStep(2)"><span>2</span> Kanten</div>
+    <div class="step-tab locked" id="tab3" onclick="switchStep(3)"><span>🔒</span> Rechnen</div>
+    <div class="step-tab locked" id="tab4" onclick="switchStep(4)"><span>🔒</span> Regel</div>
+</div>
+
+<div class="content-container">
+    
+    <div class="step-panel active" id="panel1">
+        <div class="step-title">📦 Schritt 1: Flächen genau untersuchen</div>
+        <p>Schaut euch das flache Körpernetz auf dem Tisch und auf dem Bildschirm genau an.</p>
+        <p><b>Eure Forscheraufgabe:</b> Findet im Netz Flächen heraus, die exakt gleich groß sind. Markiert diese Paare auf eurem echten Arbeitsblatt und überprüft eure Vermutung oben am 3D-Modell.</p>
+    </div>
+
+    <div class="step-panel" id="panel2">
+        <div class="step-title">📐 Schritt 2: Kantenbezeichnungen übertragen</div>
+        <p>Übertragt eure Kantenbezeichnungen von eurer echten Box auf das gezeichnete Netz. Achtet genau darauf, welche Kanten im Raummodell dieselbe Länge besitzen.</p>
+        <p style="color: #475569;">💡 <i>Tippt oben auf die bunten Kantengruppen-Knöpfe, um zu sehen, welche Kantenlinien im Raum und in der Fläche zusammengehören!</i></p>
+        
+        <button class="info-trigger-btn" onclick="document.getElementById('checkZahlen').style.display='block'">ℹ️ Hilfestellung: Beispiel-Maße einblenden</button>
+        <div id="checkZahlen" class="toggle-box">
+            Wenn ihr die Beispiel-Box untersucht, gelten diese festen Maße: <br><b>Gruppe 1 = 4 cm, Gruppe 2 = 3 cm, Gruppe 3 = 2 cm</b>.<br>Findet heraus, welche Farbe zu welchem Maß gehört!
+        </div>
+    </div>
+
+    <div class="step-panel" id="panel3">
+        <div class="step-title">🧮 Schritt 3: Flächenberechnung überprüfen</div>
+        <p>Berechnet nun die Flächeninhalte für die von euch entdeckten Flächenpaare. Falls ihr mit der <b>Beispiel-Box (4×3×2 cm)</b> arbeitet, könnt ihr eure Ergebnisse hier live testen:</p>
+        
+        <div class="validation-row">
+            <span>Erstes Flächenpaar (zusammen):</span>
+            <span><input type="number" class="calc-input" oninput="checkCalc(this, [16,24,12])"> cm²</span>
+        </div>
+        <div class="validation-row">
+            <span>Zweites Flächenpaar (zusammen):</span>
+            <span><input type="number" class="calc-input" oninput="checkCalc(this, [16,24,12])"> cm²</span>
+        </div>
+        <div class="validation-row">
+            <span>Drittes Flächenpaar (zusammen):</span>
+            <span><input type="number" class="calc-input" oninput="checkCalc(this, [16,24,12])"> cm²</span>
+        </div>
+        <p style="font-size:0.75rem; color:#64748b; margin-top:8px; font-style: italic;">(Die Werte können in einer völlig beliebigen Reihenfolge eingetragen werden!)</p>
+    </div>
+
+    <div class="step-panel" id="panel4">
+        <div class="step-title">💡 Schritt 4: Die allgemeine Regel entdecken</div>
+        <p>Schafft ihr es, eine kurze Rechenregel aufzuschreiben, mit der man den genauen Materialverbrauch von <b>jeder</b> Box auf der Welt blitzschnell berechnen kann?</p>
+        <p>🌟 <b>Für Experten:</b> Wenn ihr möchtet, dürft ihr eure gemessenen Zahlen durch mathematische Buchstaben ersetzen.</p>
+        
+        <p style="margin-bottom: 6px;"><i>Bereitet euren Vortrag vor. Diese Satzbausteine helfen euch:</i></p>
+        <div class="pill-container">
+            <div class="pill">Wir haben im Netz entdeckt, dass...</div>
+            <div class="pill">Deshalb muss man nicht alle sechs Flächen einzeln...</div>
+            <div class="pill">Unsere allgemeine Rechenregel lautet...</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Startet bei 2, da Schritt 1 aktiv und Schritt 2 direkt anwählbar ist
+    let maxUnlocked = 2; 
+
+    function switchStep(stepNum) {
+        const targetTab = document.getElementById(`tab${stepNum}`);
+        
+        // Blockieren, falls der Schritt noch gesperrt ist
+        if (targetTab.classList.contains('locked')) return;
+
+        // Alle Tabs und Panels deaktivieren
+        document.querySelectorAll('.step-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+
+        // Gewählten Schritt aktivieren
+        targetTab.classList.add('active');
+        document.getElementById(`panel${stepNum}`).classList.add('active');
+
+        // Schaltet den jeweils NÄCHSTEN Schritt frei, sobald der aktuelle Max-Schritt betreten wird
+        if (stepNum === maxUnlocked && maxUnlocked < 4) {
+            maxUnlocked++;
+            const nextTab = document.getElementById(`tab${maxUnlocked}`);
+            nextTab.classList.remove('locked');
+            nextTab.classList.add('unlocked');
+            nextTab.innerHTML = `<span>${maxUnlocked}</span> ` + getTabName(maxUnlocked);
+        }
+    }
+
+    function getTabName(num) {
+        const names = ["", "Flächen", "Kanten", "Rechnen", "Regel"];
+        return names[num];
+    }
+
+    function toggleKanten(kantenTyp, btn) {
+        const isActive = btn.classList.contains('active');
+        document.querySelectorAll('.explorer-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.edge').forEach(e => {
+            e.classList.remove('highlight-g1', 'highlight-g2', 'highlight-g3');
+        });
+        
+        if (!isActive) {
+            btn.classList.add('active');
+            const cssClass = kantenTyp === 'h' ? 'g3' : kantenTyp;
+            document.querySelectorAll(`.id-${kantenTyp}`).forEach(e => {
+                e.classList.add(`highlight-${cssClass}`);
+            });
+        }
+    }
+
+    function checkCalc(element, allowedValues) {
+        const val = parseInt(element.value);
+        if(allowedValues.includes(val)) {
+            element.classList.add('correct');
+        } else {
+            element.classList.remove('correct');
+        }
+    }
+</script>
+</body>
+</html>
