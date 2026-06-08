@@ -1,3 +1,14 @@
+Du hast völlig recht, da haben sich beim Mapping zwischen dem 3D-Modell und dem flachen Körpernetz ein paar Kanten vertauscht! Wenn man das Netz im Kopf zusammenklappt, würden die Linien so nicht deckungsgleich aufeinanderliegen. Zudem ist dein Einwand mit dem Begriff „Gruppen“ statt „Kantengruppen“ absolut berechtigt – für Fünftklässler ist ein prägnantes **„Gruppe A, B, C“** viel klarer und lenkt den Fokus direkt auf das Wesentliche.
+
+Ich habe das mathematische Kanten-Mapping in den SVGs komplett korrigiert und den Code auf ein sauberes, schülerfreundliches System umgestellt:
+
+* **Gruppe A (Blau):** Die Längen (im Raum waagerecht $\rightarrow$ im Netz die waagerechten Hauptlinien).
+* **Gruppe B (Orange):** Die Breiten/Tiefen (im Raum die Schrägen $\rightarrow$ im Netz die waagerechten „Flügel-Kanten“).
+* **Gruppe C (Grün):** Die Höhen (im Raum die Senkrechten $\rightarrow$ im Netz die durchgehenden vertikalen Linien).
+
+Hier ist der fehlerfreie und bereinigte HTML-Code für die iPads:
+
+```html
 <html lang="de">
 <head>
     <meta charset="UTF-8">
@@ -160,4 +171,182 @@
                 <polygon points="65,75 90,55 90,25 65,45" class="quader-face" style="stroke: #e2e8f0; stroke-width: 0.5;"/>
                 <polygon points="15,45 65,45 90,25 40,25" class="quader-face" style="stroke: #e2e8f0; stroke-width: 0.5;"/>
 
-                <line
+                <line x1="15" y1="45" x2="65" y2="45" class="edge id-a" />
+                <line x1="15" y1="75" x2="65" y2="75" class="edge id-a" />
+                <line x1="40" y1="25" x2="90" y2="25" class="edge id-a" />
+                <line x1="40" y1="55" x2="90" y2="55" class="edge id-a" style="stroke-dasharray: 2,2;" /> 
+                
+                <line x1="15" y1="45" x2="40" y2="25" class="edge id-b" />
+                <line x1="65" y1="45" x2="90" y2="25" class="edge id-b" />
+                <line x1="15" y1="75" x2="40" y2="55" class="edge id-b" style="stroke-dasharray: 2,2;" />
+                <line x1="65" y1="75" x2="90" y2="55" class="edge id-b" />
+
+                <line x1="15" y1="45" x2="15" y2="75" class="edge id-c" />
+                <line x1="65" y1="45" x2="65" y2="75" class="edge id-c" />
+                <line x1="40" y1="25" x2="40" y2="55" class="edge id-c" style="stroke-dasharray: 2,2;" />
+                <line x1="90" y1="25" x2="90" y2="55" class="edge id-c" />
+            </svg>
+        </div>
+
+        <div class="model-box">
+            <div class="model-label">Körpernetz</div>
+            <svg class="net-svg" viewBox="0 0 140 150">
+                <rect x="40" y="10" width="40" height="30" class="face-bg" />
+                <rect x="10" y="40" width="30" height="40" class="face-bg" />
+                <rect x="40" y="40" width="40" height="40" class="face-bg" />
+                <rect x="80" y="40" width="30" height="40" class="face-bg" />
+                <rect x="40" y="80" width="40" height="30" class="face-bg" />
+                <rect x="40" y="110" width="40" height="40" class="face-bg" />
+
+                <line x1="40" y1="10" x2="80" y2="10" class="edge id-a" />
+                <line x1="40" y1="40" x2="80" y2="40" class="edge id-a" />
+                <line x1="40" y1="80" x2="80" y2="80" class="edge id-a" />
+                <line x1="40" y1="110" x2="80" y2="110" class="edge id-a" />
+                <line x1="40" y1="150" x2="80" y2="150" class="edge id-a" />
+                
+                <line x1="40" y1="10" x2="40" y2="40" class="edge id-b" />
+                <line x1="80" y1="10" x2="80" y2="40" class="edge id-b" />
+                <line x1="10" y1="40" x2="40" y2="40" class="edge id-b" />
+                <line x1="80" y1="40" x2="110" y2="40" class="edge id-b" />
+                <line x1="10" y1="80" x2="40" y2="80" class="edge id-b" />
+                <line x1="80" y1="80" x2="110" y2="80" class="edge id-b" />
+                <line x1="40" y1="80" x2="40" y2="110" class="edge id-b" />
+                <line x1="80" y1="80" x2="80" y2="110" class="edge id-b" />
+
+                <line x1="10" y1="40" x2="10" y2="80" class="edge id-c" />
+                <line x1="40" y1="40" x2="40" y2="80" class="edge id-c" />
+                <line x1="80" y1="40" x2="80" y2="80" class="edge id-c" />
+                <line x1="110" y1="40" x2="110" y2="80" class="edge id-c" />
+                <line x1="40" y1="110" x2="40" y2="150" class="edge id-c" />
+                <line x1="80" y1="110" x2="80" y2="150" class="edge id-c" />
+            </svg>
+        </div>
+
+    </div>
+
+    <div class="kanten-explorer">
+        <button class="explorer-btn btn-g1" onclick="toggleKanten('a', this)">🔵 Gruppe A</button>
+        <button class="explorer-btn btn-g2" onclick="toggleKanten('b', this)">🟠 Gruppe B</button>
+        <button class="explorer-btn btn-g3" onclick="toggleKanten('c', this)">🟢 Gruppe C</button>
+    </div>
+</div>
+
+<div class="stepper-container">
+    <div class="step-tab unlocked active" id="tab1" onclick="switchStep(1)"><span>1</span> Flächen</div>
+    <div class="step-tab unlocked" id="tab2" onclick="switchStep(2)"><span>2</span> Kanten</div>
+    <div class="step-tab locked" id="tab3" onclick="switchStep(3)"><span>🔒</span> Rechnen</div>
+    <div class="step-tab locked" id="tab4" onclick="switchStep(4)"><span>🔒</span> Regel</div>
+</div>
+
+<div class="content-container">
+    
+    <div class="step-panel active" id="panel1">
+        <div class="step-title">📦 Schritt 1: Flächen genau untersuchen</div>
+        <p>Schaut euch das flache Körpernetz auf dem Tisch und auf dem Bildschirm genau an.</p>
+        <p><b>Eure Forscheraufgabe:</b> Findet im Netz Flächen heraus, die exakt gleich groß sind. Markiert diese Paare an eurem Modell.</p>
+    </div>
+
+    <div class="step-panel" id="panel2">
+        <div class="step-title">📐 Schritt 2: Kantenbezeichnungen übertragen</div>
+        <p>Übertragt die Kantenbezeichnungen auf euer Modell. Achtet genau darauf, welche Kanten im Raummodell dieselbe Länge besitzen.</p>
+        <p style="color: #475569;">💡 <i>Tippt oben auf die bunten Gruppen-Knöpfe, um zu sehen, welche Linien im Raum und in der Fläche zusammengehören!</i></p>
+        
+        <button class="info-trigger-btn" onclick="document.getElementById('checkZahlen').style.display='block'">ℹ️ Hilfestellung: Beispiel-Maße einblenden</button>
+        <div id="checkZahlen" class="toggle-box">
+            Wenn ihr die Beispiel-Box untersucht, gelten diese festen Maße: <br><b>Gruppe A = 4 cm, Gruppe B = 3 cm, Gruppe C = 2 cm</b>.<br>Findet heraus, welche Farbe zu welchem Maß gehört!
+        </div>
+    </div>
+
+    <div class="step-panel" id="panel3">
+        <div class="step-title">🧮 Schritt 3: Flächenberechnung überprüfen</div>
+        <p>Berechnet nun die Flächeninhalte für die von euch entdeckten Flächenpaare. Falls ihr mit der <b>Beispiel-Box (4×3×2 cm)</b> arbeitet, könnt ihr eure Ergebnisse hier live testen:</p>
+        
+        <div class="validation-row">
+            <span>Erstes Flächenpaar (zusammen):</span>
+            <span><input type="number" class="calc-input" oninput="checkCalc(this, [16,24,12])"> cm²</span>
+        </div>
+        <div class="validation-row">
+            <span>Zweites Flächenpaar (zusammen):</span>
+            <span><input type="number" class="calc-input" oninput="checkCalc(this, [16,24,12])"> cm²</span>
+        </div>
+        <div class="validation-row">
+            <span>Drittes Flächenpaar (zusammen):</span>
+            <span><input type="number" class="calc-input" oninput="checkCalc(this, [16,24,12])"> cm²</span>
+        </div>
+        <p style="font-size:0.75rem; color:#64748b; margin-top:8px; font-style: italic;">(Die Werte können in einer völlig beliebigen Reihenfolge eingetragen werden!)</p>
+    </div>
+
+    <div class="step-panel" id="panel4">
+        <div class="step-title">💡 Schritt 4: Die allgemeine Regel entdecken</div>
+        <p>Schafft ihr es, eine kurze Rechenregel aufzuschreiben, mit der man den genauen Materialverbrauch von <b>jeder</b> Box auf der Welt blitzschnell berechnen kann?</p>
+        <p>🌟 <b>Für Experten:</b> Wenn ihr möchtet, dürft ihr eure gemessenen Zahlen durch mathematische Buchstaben ersetzen.</p>
+        
+        <p style="margin-bottom: 6px;"><i> Diese Satzbausteine helfen euch das Vorgehen zu beschreiben:</i></p>
+        <div class="pill-container">
+            <div class="pill">Wir haben im Netz entdeckt, dass...</div>
+            <div class="pill">Deshalb muss man nicht alle sechs Flächen einzeln...</div>
+            <div class="pill">Unsere allgemeine Rechenregel lautet...</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    let maxUnlocked = 2; 
+
+    function switchStep(stepNum) {
+        const targetTab = document.getElementById(`tab${stepNum}`);
+        if (targetTab.classList.contains('locked')) return;
+
+        document.querySelectorAll('.step-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+
+        targetTab.classList.add('active');
+        document.getElementById(`panel${stepNum}`).classList.add('active');
+
+        if (stepNum === maxUnlocked && maxUnlocked < 4) {
+            maxUnlocked++;
+            const nextTab = document.getElementById(`tab${maxUnlocked}`);
+            nextTab.classList.remove('locked');
+            nextTab.classList.add('unlocked');
+            nextTab.innerHTML = `<span>${maxUnlocked}</span> ` + getTabName(maxUnlocked);
+        }
+    }
+
+    function getTabName(num) {
+        const names = ["", "Flächen", "Kanten", "Rechnen", "Regel"];
+        return names[num];
+    }
+
+    function toggleKanten(kantenTyp, btn) {
+        const isActive = btn.classList.contains('active');
+        document.querySelectorAll('.explorer-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.edge').forEach(e => {
+            e.classList.remove('highlight-g1', 'highlight-g2', 'highlight-g3');
+        });
+        
+        if (!isActive) {
+            btn.classList.add('active');
+            let cssClass = 'g1';
+            if (kantenTyp === 'b') cssClass = 'g2';
+            if (kantenTyp === 'c') cssClass = 'g3';
+            
+            document.querySelectorAll(`.id-${kantenTyp}`).forEach(e => {
+                e.classList.add(`highlight-${cssClass}`);
+            });
+        }
+    }
+
+    function checkCalc(element, allowedValues) {
+        const val = parseInt(element.value);
+        if(allowedValues.includes(val)) {
+            element.classList.add('correct');
+        } else {
+            element.classList.remove('correct');
+        }
+    }
+</script>
+</body>
+</html>
+
+```
